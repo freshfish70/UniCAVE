@@ -1,4 +1,4 @@
-﻿//MIT License
+//MIT License
 //Copyright 2016-Present 
 //Ross Tredinnick
 //Benny Wysong-Grass
@@ -28,11 +28,13 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 
     public static Vector3 globalPostOffset = new Vector3(0.0f, 0.0f, 0.0f);
 
-    public bool loadAtRuntime = false;
 
-    public float displayRatio {
-        get {
-            return GetComponent<PhysicalDisplay>().windowBounds.width / (float)GetComponent<PhysicalDisplay>().windowBounds.height;
+
+    public float displayRatio
+    {
+        get
+        {
+            return GetComponent<PhysicalDisplay>().windowBounds.width / (float) GetComponent<PhysicalDisplay>().windowBounds.height;
         }
     }
 
