@@ -29,12 +29,12 @@ public class Dewarp
     /// <summary>
     /// The vertices size on the x axis
     /// </summary>
-    public readonly int xSize = 2;
+    public int xSize { get; private set; } = 2;
 
     /// <summary>
     /// The vertices size on the y axis
     /// </summary>
-    public readonly int ySize = 2;
+    public int ySize { get; private set; } = 2;
 
     /// <summary>
     /// The game object name for the dewarp mesh
@@ -143,7 +143,7 @@ public class Dewarp
     /// </summary>
     /// <param name="x">vertices on the x axis</param>
     /// <param name="y">vertices on the y axis</param>
-    public SetMeshResolution(int x = 2, int y = 2)
+    public void SetMeshResolution(int x = 2, int y = 2)
     {
         if (x < 2) throw new ArgumentException("X must atleast have 2 vertices");
         if (y < 2) throw new ArgumentException("Y must atleast have 2 vertices");
