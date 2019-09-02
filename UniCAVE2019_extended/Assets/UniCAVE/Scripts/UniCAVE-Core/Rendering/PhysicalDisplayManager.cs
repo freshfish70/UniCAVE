@@ -12,18 +12,18 @@
 //IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 //TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
-using UnityEditor.SceneManagement;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 #endif
 
 //Used to put multiple displays in one instance of the program
 //Start in full screen if you use this
-public class PhysicalDisplayManager : MonoBehaviour {
+public class PhysicalDisplayManager : MonoBehaviour
+{
 
     public string machineName;
     public bool fullscreen = true;
@@ -31,12 +31,15 @@ public class PhysicalDisplayManager : MonoBehaviour {
     public Vector2Int displayResolution;
     public List<PhysicalDisplay> displays = new List<PhysicalDisplay>();
 
-    public bool ShouldBeActive() {
+    public bool ShouldBeActive()
+    {
         return machineName == Util.GetMachineName();
     }
 
-    void Start() {
-        if (!ShouldBeActive()) {
+    void Start()
+    {
+        if (!ShouldBeActive())
+        {
             Debug.Log("Deactivating Display Manager: " + gameObject.name);
             gameObject.SetActive(false);
             return;
@@ -45,30 +48,40 @@ public class PhysicalDisplayManager : MonoBehaviour {
     }
 
     bool _initialized = false;
-    void Update() {
-        if (!_initialized) {
+    void Update()
+    {
+        if (!_initialized)
+        {
             bool displaysInitialized = true;
-            for (int i = 0; i < displays.Count; i++) {
-                if (displays[i].gameObject.activeSelf && displays[i].enabled && !displays[i].Initialized()) {
+            for (int i = 0; i < displays.Count; i++)
+            {
+                if (displays[i].gameObject.activeSelf && displays[i].enabled && !displays[i].Initialized())
+                {
                     displaysInitialized = false;
                     break;
                 }
                 PhysicalDisplayCalibration cali = displays[i].gameObject.GetComponent<PhysicalDisplayCalibration>();
-                if (cali != null && !cali.Initialized()) {
+                if (cali != null && !cali.Initialized())
+                {
                     displaysInitialized = false;
                     break;
                 }
             }
             //wait until every other display is initialized
 
-            if (displaysInitialized) {
-                for (int i = 0; i < displays.Count; i++) {
+            if (displaysInitialized)
+            {
+                for (int i = 0; i < displays.Count; i++)
+                {
                     PhysicalDisplay display = displays[i];
 
                     PhysicalDisplayCalibration cali = display.gameObject.GetComponent<PhysicalDisplayCalibration>();
-                    if (cali == null) {
-                        if (!display.useRenderTextures) {
-                            if (display.dualPipe) {
+                    if (cali == null)
+                    {
+                        if (!display.useRenderTextures)
+                        {
+                            if (display.dualPipe)
+                            {
                                 Vector2Int windowSpaceOffset = display.dualInstance ? new Vector2Int(0, 0) : new Vector2Int(display.windowBounds.x, display.windowBounds.y);
                                 display.leftCam.pixelRect = new Rect(
                                     windowSpaceOffset.x + display.leftViewport.x,
@@ -80,29 +93,36 @@ public class PhysicalDisplayManager : MonoBehaviour {
                                     windowSpaceOffset.y + display.rightViewport.y,
                                     display.rightViewport.width,
                                     display.rightViewport.height);
-                            } else {
+                            }
+                            else
+                            {
                                 //if stereo blit is enabled, only update the viewport of the center cam (in the future perhaps consolidate this logic with useRenderTextures)
-                                if(display.centerCam != null && display.centerCam.GetComponent<StereoBlit>() != null) {
+                                if (display.centerCam != null && display.centerCam.GetComponent<StereoBlit>() != null)
+                                {
                                     display.centerCam.pixelRect = new Rect(display.windowBounds.x, display.windowBounds.y, display.windowBounds.width, display.windowBounds.height);
-                                } else {
-                                    foreach (Camera cam in display.GetAllCameras()) {
-                                        Debug.Log("Manager [" + name + "] set Camera [" + cam.name + "] viewport to <"
-                                            + display.windowBounds.x + ", " + display.windowBounds.y + ", " + display.windowBounds.width + ", " + display.windowBounds.height + ">");
+                                }
+                                else
+                                {
+                                    foreach (Camera cam in display.GetAllCameras())
+                                    {
+                                        Debug.Log("Manager [" + name + "] set Camera [" + cam.name + "] viewport to <" +
+                                            display.windowBounds.x + ", " + display.windowBounds.y + ", " + display.windowBounds.width + ", " + display.windowBounds.height + ">");
                                         cam.pixelRect = new Rect(display.windowBounds.x, display.windowBounds.y, display.windowBounds.width, display.windowBounds.height);
                                     }
                                 }
                             }
                         }
-                    } else {
+                    }
+                    else
+                    {
                         //special case for PhysicalDisplayCalibration
                         Debug.Log("Display:");
-                        foreach (Camera cam in cali.postCams) {
+                        foreach (Camera cam in cali.postCams)
+                        {
                             cam.pixelRect = new Rect(display.windowBounds.x, display.windowBounds.y, display.windowBounds.width, display.windowBounds.height);
                         }
                     }
                 }
-
-
 
                 _initialized = true;
             }
@@ -110,7 +130,8 @@ public class PhysicalDisplayManager : MonoBehaviour {
     }
 
     [ContextMenu("Assign This Manager to Children")]
-    void AssignManagerChildren() {
+    void AssignManagerChildren()
+    {
         AssignManagerChildren_h(null);
     }
 
@@ -118,14 +139,18 @@ public class PhysicalDisplayManager : MonoBehaviour {
     /// helper function to assign this manager to all its children
     /// </summary>
     /// <param name="it">initial object to recursively iterate through</param>
-    void AssignManagerChildren_h(GameObject it = null) {
+    void AssignManagerChildren_h(GameObject it = null)
+    {
         if (it == null) it = gameObject;
 
-        for (int i = 0; i < it.transform.childCount; i++) {
+        for (int i = 0; i < it.transform.childCount; i++)
+        {
             GameObject child = it.transform.GetChild(i).gameObject;
             PhysicalDisplay disp = child.GetComponent<PhysicalDisplay>();
-            if (disp != null) {
-                if (disp.manager != null) {
+            if (disp != null)
+            {
+                if (disp.manager != null)
+                {
                     disp.manager.displays.Remove(disp);
                 }
                 displays.Remove(disp);
@@ -139,48 +164,61 @@ public class PhysicalDisplayManager : MonoBehaviour {
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(PhysicalDisplayManager))]
-public class PhysicalDisplayManagerEditor : Editor {
-    public override void OnInspectorGUI() {
+public class PhysicalDisplayManagerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
         PhysicalDisplayManager manager = target as PhysicalDisplayManager;
 
         manager.machineName = EditorGUILayout.TextField("Machine Name", manager.machineName);
-        if(manager.fullscreen = EditorGUILayout.Toggle("Fullscreen", manager.fullscreen)) {
+        if (manager.fullscreen = EditorGUILayout.Toggle("Fullscreen", manager.fullscreen))
+        {
             manager.displayNumber = EditorGUILayout.IntField("Display Number", manager.displayNumber);
         }
         manager.displayResolution = EditorGUILayout.Vector2IntField("Resolution", manager.displayResolution);
-        if (GUILayout.Button("Assign children to this manager")) {
-            foreach (Transform child in manager.transform) {
+        if (GUILayout.Button("Assign children to this manager"))
+        {
+            foreach (Transform child in manager.transform)
+            {
                 PhysicalDisplay disp = child.GetComponent<PhysicalDisplay>();
-                if (disp != null) {
-                    if (disp.manager != null) {
+                if (disp != null)
+                {
+                    if (disp.manager != null)
+                    {
                         disp.manager.displays.Remove(disp);
                     }
                     disp.manager = manager;
                     EditorUtility.SetDirty(disp);
-                    if (!manager.displays.Contains(disp)) {
+                    if (!manager.displays.Contains(disp))
+                    {
                         manager.displays.Add(disp);
                     }
                 }
             }
         }
         GUILayout.Label("Associated displays:");
-        for (int i = 0; i < manager.displays.Count; i++) {
-            if (EditorGUILayout.ObjectField(manager.displays[i], typeof(PhysicalDisplay)) == null) {
+        for (int i = 0; i < manager.displays.Count; i++)
+        {
+            if (EditorGUILayout.ObjectField(manager.displays[i], typeof(PhysicalDisplay)) == null)
+            {
                 manager.displays.RemoveAt(i);
                 i--;
             }
         }
 
-        PhysicalDisplay addedDisp = (PhysicalDisplay)EditorGUILayout.ObjectField("Add Display", null, typeof(PhysicalDisplay));
-        if (addedDisp != null) {
-            if (addedDisp.manager != null) {
+        PhysicalDisplay addedDisp = (PhysicalDisplay) EditorGUILayout.ObjectField("Add Display", null, typeof(PhysicalDisplay));
+        if (addedDisp != null)
+        {
+            if (addedDisp.manager != null)
+            {
                 addedDisp.manager.displays.Remove(addedDisp);
             }
             addedDisp.manager = manager;
             if (!manager.displays.Contains(addedDisp)) manager.displays.Add(addedDisp);
         }
 
-        if (GUI.changed) {
+        if (GUI.changed)
+        {
             EditorUtility.SetDirty(manager);
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         }
