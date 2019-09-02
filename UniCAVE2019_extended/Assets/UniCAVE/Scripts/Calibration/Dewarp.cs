@@ -29,12 +29,12 @@ public class Dewarp
     /// <summary>
     /// The vertices size on the x axis
     /// </summary>
-    public int xSize { get; private set; } = 2;
+    public int xSize { get; private set; } = 7;
 
     /// <summary>
     /// The vertices size on the y axis
     /// </summary>
-    public int ySize { get; private set; } = 2;
+    public int ySize { get; private set; } = 7;
 
     /// <summary>
     /// The game object name for the dewarp mesh
@@ -61,53 +61,59 @@ public class Dewarp
     /// </summary>
     private Material renderMaterial;
 
+    private DewarpMeshPosition _calibratedVerticesPositions;
+
     /// <summary>
     /// Holds the calibrated dewarp positions
     /// </summary>
-    public DewarpMeshPosition calibratedVerticesPositions
+    public DewarpMeshPosition CalibratedVerticesPositions
     {
-        get { return this.calibratedVerticesPositions; }
+        get { return this._calibratedVerticesPositions; }
         private set
         {
             if (value == null)
             {
                 throw new ArgumentException("Vertices positions object cant be null");
             }
-            this.calibratedVerticesPositions = value;
+            this._calibratedVerticesPositions = value;
         }
     }
+
+    private Material _postProcessMaterial;
 
     /// <summary>
     /// Holds the Post process material for the mesh.
     /// </summary>
     /// <value></value>
-    private Material postProcessMaterial
+    private Material PostProcessMaterial
     {
-        get { return this.postProcessMaterial; }
+        get { return this._postProcessMaterial; }
         set
         {
             if (value == null)
             {
                 throw new ArgumentException("Missing postprocess material");
             }
-            postProcessMaterial = value;
+            this._postProcessMaterial = value;
         }
     }
+
+    private RenderTexture _cameraTexture;
 
     /// <summary>
     /// Holds the Render texture for the render camera
     /// </summary>
     /// <value></value>
-    private RenderTexture cameraTexture
+    private RenderTexture CameraTexture
     {
-        get { return this.cameraTexture; }
+        get { return this._cameraTexture; }
         set
         {
-            if (cameraTexture == null)
+            if (value == null)
             {
                 throw new ArgumentException("Missing camera texture");
             }
-            cameraTexture = value;
+            this._cameraTexture = value;
         }
     }
 
@@ -130,9 +136,9 @@ public class Dewarp
 
         dewarpObject = new GameObject(objectName + name);
 
-        this.postProcessMaterial = postProcessMaterial;
-        this.calibratedVerticesPositions = verticesPositions;
-        this.cameraTexture = cameraTexture;
+        this.PostProcessMaterial = postProcessMaterial;
+        this.CalibratedVerticesPositions = verticesPositions;
+        this.CameraTexture = cameraTexture;
         this.GenerateMesh();
         this.GenerateAndAssignMaterials(name);
     }
@@ -156,10 +162,8 @@ public class Dewarp
     /// </summary>
     private void GenerateMesh()
     {
-
         this.warpMeshFilter = dewarpObject.AddComponent<MeshFilter>();
         this.warpMeshFilter.mesh = Generate();
-
     }
 
     /// <summary>
@@ -168,10 +172,10 @@ public class Dewarp
     private void GenerateAndAssignMaterials(string nameForMaterial)
     {
 
-        this.renderMaterial = new Material(postProcessMaterial);
+        this.renderMaterial = new Material(this._postProcessMaterial);
         this.renderMaterial.name = $"Material for {nameForMaterial}";
 
-        this.renderMaterial.mainTexture = cameraTexture;
+        this.renderMaterial.mainTexture = this._cameraTexture;
         this.dewarpObject.AddComponent<MeshRenderer>().material = this.renderMaterial;
     }
 
@@ -198,9 +202,9 @@ public class Dewarp
         this.warpMesh = new Mesh();
         this.warpMesh.name = "Warp mesh";
 
-        this.calibratedVerticesPositions.generatedVerts = new Vector3[(this.xSize + 1) * (this.ySize + 1)];
-        Vector2[] uv = new Vector2[this.calibratedVerticesPositions.generatedVerts.Length];
-        Vector4[] tangents = new Vector4[this.calibratedVerticesPositions.generatedVerts.Length];
+        this._calibratedVerticesPositions.generatedVerts = new Vector3[(this.xSize + 1) * (this.ySize + 1)];
+        Vector2[] uv = new Vector2[this._calibratedVerticesPositions.generatedVerts.Length];
+        Vector4[] tangents = new Vector4[this._calibratedVerticesPositions.generatedVerts.Length];
         Vector4 tangent = new Vector4(1f, 0f, 0f, -1f);
 
         decimal xx = xSize;
@@ -217,13 +221,13 @@ public class Dewarp
         {
             for (int x = 0; x <= xSize; x++, i++)
             {
-                if (this.calibratedVerticesPositions.verts.Length == this.calibratedVerticesPositions.generatedVerts.Length)
+                if (this._calibratedVerticesPositions.verts.Length == this._calibratedVerticesPositions.generatedVerts.Length)
                 {
-                    this.calibratedVerticesPositions.generatedVerts[i] = new Vector3((float) this.calibratedVerticesPositions.verts[i].x, (float) this.calibratedVerticesPositions.verts[i].y);
+                    this._calibratedVerticesPositions.generatedVerts[i] = new Vector3((float) this._calibratedVerticesPositions.verts[i].x, (float) this._calibratedVerticesPositions.verts[i].y);
                 }
                 else
                 {
-                    this.calibratedVerticesPositions.generatedVerts[i] = new Vector3((float) lastX, (float) lastY);
+                    this._calibratedVerticesPositions.generatedVerts[i] = new Vector3((float) lastX, (float) lastY);
                 }
                 uv[i] = new Vector2((float) x / xSize, (float) y / ySize);
                 tangents[i] = tangent;
@@ -246,15 +250,15 @@ public class Dewarp
                 triangles[ti + 5] = vi + xSize + 2;
             }
         }
-        this.warpMesh.vertices = this.calibratedVerticesPositions.generatedVerts;
+        this.warpMesh.vertices = this._calibratedVerticesPositions.generatedVerts;
         this.warpMesh.triangles = triangles;
         this.warpMesh.uv = uv;
         this.warpMesh.tangents = tangents;
         this.warpMesh.RecalculateNormals();
         this.warpMesh.RecalculateTangents();
-        if (this.calibratedVerticesPositions.verts.Length == 0)
+        if (this._calibratedVerticesPositions.verts.Length == 0)
         {
-            this.calibratedVerticesPositions.verts = this.calibratedVerticesPositions.generatedVerts;
+            this._calibratedVerticesPositions.verts = this._calibratedVerticesPositions.generatedVerts;
         }
 
         return this.warpMesh;
