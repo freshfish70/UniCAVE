@@ -23,6 +23,8 @@ public class RealtimeCalibrator : NetworkBehaviour
         ROTATION
     }
 
+    private int totalMeshVertices = 0;
+
     /// <summary>
     /// Holds the current calibration type.
     /// Default is <c>CalibrationType.VERTEX</c>
@@ -87,6 +89,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 
         Debug.Log("RealtimeCalibration: Found " + allOptions.Count + " calibration objects");
         StartCoroutine(InitiateInfoScreen());
+        this.totalMeshVertices = allOptions[selectedIndex].calibration.GetMeshResolution() - 1;
     }
 
     /// <summary>
@@ -101,6 +104,7 @@ public class RealtimeCalibrator : NetworkBehaviour
         this.CreateInfoDisplay();
         this.InfoDisplayShift(this.selectedIndex);
         this.RpcInfoDisplayShift(this.selectedIndex);
+
         yield break;
     }
 
@@ -141,7 +145,7 @@ public class RealtimeCalibrator : NetworkBehaviour
             Vector3[] verts = meshFilter.sharedMesh.vertices;
             // verts[vertexIndex] = new Vector3(verts[vertexIndex].x + direction.x * delta, verts[vertexIndex].y + direction.y * delta, verts[vertexIndex].z);
 
-            Dictionary<int, float> vertsToShift = this.getIndexesSurrounding(dewarp.xSize, vertexIndex);
+            Dictionary<int, float> vertsToShift = this.getIndexesSurrounding(dewarp.xSize, dewarp.ySize, vertexIndex);
             foreach (var ind in vertsToShift)
             {
                 verts[ind.Key] = new Vector3(verts[ind.Key].x + (direction.x * delta * ind.Value), verts[ind.Key].y + (direction.y * delta * ind.Value), verts[ind.Key].z);
@@ -250,12 +254,13 @@ public class RealtimeCalibrator : NetworkBehaviour
     /// <param name="size">the x axis size</param>
     /// <param name="index">the index number</param>
     /// <returns>dictionary of indexeswith the index and a move factor</returns>
-    public Dictionary<int, float> getIndexesSurrounding(int size, int index)
+    public Dictionary<int, float> getIndexesSurrounding(int x, int y, int index)
     {
 
-        int sizeX = size;
+        int sizeX = x;
+        int sizeY = y;
 
-        int indexSizeX = size + 1;
+        int indexSizeX = x + 1;
 
         // The row the selected index is on
         int indexRow = (index / (sizeX + 1)) < 1.0f ? 0 : (int) Mathf.Floor(index / (sizeX + 1));
@@ -379,7 +384,17 @@ public class RealtimeCalibrator : NetworkBehaviour
     {
         InfoDisplayShift(selectedIndex);
         RpcInfoDisplayShift(selectedIndex);
+        // RpcSyncRes(selectedIndex);
     }
+
+    // private void RpcSyncRes(int selectedIndex)
+    // {
+    //     Debug.Log(selectedIndex);
+    //     Debug.Log(allOptions);
+    //     Debug.Log(allOptions[selectedIndex].machineName);
+    //     Debug.Log(allOptions[selectedIndex].calibration.GetMeshResolution() - 1);
+    //     // test(allOptions[selectedIndex].calibration.GetMeshResolution() - 1);
+    // }
 
     /// <summary>
     /// Triggers Rpc set last display index method and set it on local
@@ -521,6 +536,7 @@ public class RealtimeCalibrator : NetworkBehaviour
             this.selectedIndex = (selectedIndex + 1) % allOptions.Count;
             if (!noOptions)
             {
+                vertexIndex = 0;
                 DisplayShift();
                 VertexShift(direction, 1f);
             }
@@ -528,9 +544,8 @@ public class RealtimeCalibrator : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.A))
         {
-
             int lastIndex = this.vertexIndex - 1;
-            this.vertexIndex = (lastIndex < 0) ? 63 : lastIndex;
+            this.vertexIndex = (lastIndex < 0) ? this.totalMeshVertices : lastIndex;
             Debug.Log(vertexIndex);
             if (!noOptions)
             {
@@ -542,7 +557,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.D))
         {
-            this.vertexIndex = (vertexIndex + 1) % 63;
+            this.vertexIndex = (vertexIndex + 1) % this.totalMeshVertices;
             if (!noOptions)
             {
                 Debug.Log(vertexIndex);

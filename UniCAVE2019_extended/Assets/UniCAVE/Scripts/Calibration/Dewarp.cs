@@ -29,12 +29,12 @@ public class Dewarp
     /// <summary>
     /// The vertices size on the x axis
     /// </summary>
-    public int xSize { get; private set; } = 7;
+    public int xSize { get; private set; } = 2;
 
     /// <summary>
     /// The vertices size on the y axis
     /// </summary>
-    public int ySize { get; private set; } = 7;
+    public int ySize { get; private set; } = 2;
 
     /// <summary>
     /// The game object name for the dewarp mesh
@@ -139,7 +139,6 @@ public class Dewarp
         this.PostProcessMaterial = postProcessMaterial;
         this.CalibratedVerticesPositions = verticesPositions;
         this.CameraTexture = cameraTexture;
-        this.GenerateMesh();
         this.GenerateAndAssignMaterials(name);
     }
 
@@ -160,7 +159,7 @@ public class Dewarp
     /// <summary>
     /// Generates the dewarp mesh and assign the .
     /// </summary>
-    private void GenerateMesh()
+    public void GenerateMesh()
     {
         this.warpMeshFilter = dewarpObject.AddComponent<MeshFilter>();
         this.warpMeshFilter.mesh = Generate();
@@ -188,6 +187,14 @@ public class Dewarp
         if (!this.dewarpObject) throw new NullReferenceException("Cant set layer, game object is null");
         this.dewarpObject.layer = layer;
     }
+    /// <summary>
+    /// Returns the number of vertices on the dewarp mesh.
+    /// </summary>
+    /// <returns>length of vertices array</returns>
+    public int GetTotalVertices()
+    {
+        return this._calibratedVerticesPositions.verts.Length;
+    }
 
     /// <summary>
     /// Generates the dewarp mesh.
@@ -202,11 +209,6 @@ public class Dewarp
         this.warpMesh = new Mesh();
         this.warpMesh.name = "Warp mesh";
 
-        this._calibratedVerticesPositions.generatedVerts = new Vector3[(this.xSize + 1) * (this.ySize + 1)];
-        Vector2[] uv = new Vector2[this._calibratedVerticesPositions.generatedVerts.Length];
-        Vector4[] tangents = new Vector4[this._calibratedVerticesPositions.generatedVerts.Length];
-        Vector4 tangent = new Vector4(1f, 0f, 0f, -1f);
-
         decimal xx = xSize;
         decimal yy = ySize;
 
@@ -216,18 +218,26 @@ public class Dewarp
         decimal xmodifier = (2 / xx);
         decimal lastX = -1;
 
+        bool generateverts = false;
+
+        if (this._calibratedVerticesPositions.verts.Length < 2)
+        {
+            this._calibratedVerticesPositions.verts = new Vector3[(this.xSize + 1) * (this.ySize + 1)];
+            generateverts = true;
+        }
+
+        Vector2[] uv = new Vector2[this._calibratedVerticesPositions.verts.Length];
+        Vector4[] tangents = new Vector4[this._calibratedVerticesPositions.verts.Length];
+        Vector4 tangent = new Vector4(1f, 0f, 0f, -1f);
+
         // Set verices positions and generate uvs and tangents
         for (int i = 0, y = 0; y <= ySize; y++)
         {
             for (int x = 0; x <= xSize; x++, i++)
             {
-                if (this._calibratedVerticesPositions.verts.Length == this._calibratedVerticesPositions.generatedVerts.Length)
+                if (generateverts)
                 {
-                    this._calibratedVerticesPositions.generatedVerts[i] = new Vector3((float) this._calibratedVerticesPositions.verts[i].x, (float) this._calibratedVerticesPositions.verts[i].y);
-                }
-                else
-                {
-                    this._calibratedVerticesPositions.generatedVerts[i] = new Vector3((float) lastX, (float) lastY);
+                    this._calibratedVerticesPositions.verts[i] = new Vector3((float) lastX, (float) lastY);
                 }
                 uv[i] = new Vector2((float) x / xSize, (float) y / ySize);
                 tangents[i] = tangent;
@@ -250,16 +260,13 @@ public class Dewarp
                 triangles[ti + 5] = vi + xSize + 2;
             }
         }
-        this.warpMesh.vertices = this._calibratedVerticesPositions.generatedVerts;
+
+        this.warpMesh.vertices = this._calibratedVerticesPositions.verts;
         this.warpMesh.triangles = triangles;
         this.warpMesh.uv = uv;
         this.warpMesh.tangents = tangents;
         this.warpMesh.RecalculateNormals();
         this.warpMesh.RecalculateTangents();
-        if (this._calibratedVerticesPositions.verts.Length == 0)
-        {
-            this._calibratedVerticesPositions.verts = this._calibratedVerticesPositions.generatedVerts;
-        }
 
         return this.warpMesh;
 

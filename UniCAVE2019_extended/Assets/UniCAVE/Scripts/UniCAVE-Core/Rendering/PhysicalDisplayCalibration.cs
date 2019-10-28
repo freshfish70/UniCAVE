@@ -1,3 +1,4 @@
+﻿using System.Linq;
 //MIT License
 //Copyright 2016-Present 
 //Ross Tredinnick
@@ -94,6 +95,9 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     /// Holds the instance for the visual marker, that shows which vertex is beeing modified
     /// </summary>
     private LineRenderer visualMarkerInstance;
+
+    [SerializeField]
+    public Vector2Int meshResolution = new Vector2Int(2, 2);
 
     /// <summary>
     /// Positions of the dewarp mesh vertices
@@ -226,21 +230,16 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         PhysicalDisplay display = GetComponent<PhysicalDisplay>();
         GameObject staticParent = new GameObject("Post Holder For: " + gameObject.name);
 
-        // Apply multiplier factor on all vertices
-        int numVertices = this.dewarpMeshPositions.verts.Length;
-        Vector3[] verts = this.dewarpMeshPositions.verts;
-        for (int i = 0; i < numVertices; i++)
-        {
-            verts[i] *= GetMultiplierFactor();
-        }
-
         bool stereo = true;
 
         if (this.GetDisplay().is3D)
         {
             if (this.GetDisplay().leftCam != null)
             {
-                this.displayCalibrations.Add(HeadCamera.LEFT, new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().leftTex));
+                Dewarp leftCamDewarp = new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().leftTex);
+                leftCamDewarp.SetMeshResolution(this.meshResolution.x, this.meshResolution.y);
+                leftCamDewarp.GenerateMesh();
+                this.displayCalibrations.Add(HeadCamera.LEFT, leftCamDewarp);
                 this.RemovePostProcessingFromHeadCamera(this.GetDisplay().leftCam);
             }
             else
@@ -250,7 +249,10 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 
             if (this.GetDisplay().rightCam != null)
             {
-                this.displayCalibrations.Add(HeadCamera.RIGHT, new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().rightTex));
+                Dewarp rightCamDewarp = new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().rightTex);
+                rightCamDewarp.SetMeshResolution(this.meshResolution.x, this.meshResolution.y);
+                rightCamDewarp.GenerateMesh();
+                this.displayCalibrations.Add(HeadCamera.RIGHT, rightCamDewarp);
                 this.RemovePostProcessingFromHeadCamera(this.GetDisplay().rightCam);
             }
             else
@@ -261,8 +263,19 @@ public class PhysicalDisplayCalibration : MonoBehaviour
         else
         {
             stereo = false;
-            this.displayCalibrations.Add(HeadCamera.CENTER, new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().centerTex));
+            Dewarp centerCamDewarp = new Dewarp(gameObject.name, this.postProcessMaterial, dewarpMeshPositions, this.GetDisplay().centerTex);
+            centerCamDewarp.SetMeshResolution(this.meshResolution.x, this.meshResolution.y);
+            centerCamDewarp.GenerateMesh();
+            this.displayCalibrations.Add(HeadCamera.CENTER, centerCamDewarp);
             this.RemovePostProcessingFromHeadCamera(this.GetDisplay().centerCam);
+        }
+
+        // Apply multiplier factor on all vertices
+        int numVertices = this.dewarpMeshPositions.verts.Length;
+        Vector3[] verts = this.dewarpMeshPositions.verts;
+        for (int i = 0; i < numVertices; i++)
+        {
+            verts[i] *= GetMultiplierFactor();
         }
 
         this.SetDewarpPositions(stereo);
