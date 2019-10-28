@@ -1,4 +1,4 @@
-﻿//MIT License
+//MIT License
 //Copyright 2016-Present 
 //Ross Tredinnick
 //Benny Wysong-Grass
@@ -379,6 +379,15 @@ public class PhysicalDisplayCalibration : MonoBehaviour
     private Vector2 GetMultiplierFactor()
     {
         return new Vector2(this.displayRatio, 1.0f);
+    }
+
+    /// <summary>
+    /// Returns the total mesh resolution from the <c>Dewarp</c> object.
+    /// </summary>
+    /// <returns>total mesh resolution</returns>
+    public int GetMeshResolution()
+    {
+        return this.dewarpMeshPositions.verts.Length;
     }
 
     /// <summary>
