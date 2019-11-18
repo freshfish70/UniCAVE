@@ -230,6 +230,14 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		PhysicalDisplay display = GetComponent<PhysicalDisplay>();
 		GameObject staticParent = new GameObject("Post Holder For: " + gameObject.name);
 
+		// Apply multiplier factor on all vertices
+		int numVertices = this.dewarpMeshPositions.verts.Length;
+		Vector3[] verts = this.dewarpMeshPositions.verts;
+		for (int i = 0; i < numVertices; i++)
+		{
+			verts[i] *= GetMultiplierFactor();
+		}
+
 		bool stereo = true;
 
 		if (this.GetDisplay().is3D)
@@ -268,14 +276,6 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 			centerCamDewarp.GenerateMesh();
 			this.displayCalibrations.Add(HeadCamera.CENTER, centerCamDewarp);
 			this.RemovePostProcessingFromHeadCamera(this.GetDisplay().centerCam);
-		}
-
-		// Apply multiplier factor on all vertices
-		int numVertices = this.dewarpMeshPositions.verts.Length;
-		Vector3[] verts = this.dewarpMeshPositions.verts;
-		for (int i = 0; i < numVertices; i++)
-		{
-			verts[i] *= GetMultiplierFactor();
 		}
 
 		this.SetDewarpPositions(stereo);
