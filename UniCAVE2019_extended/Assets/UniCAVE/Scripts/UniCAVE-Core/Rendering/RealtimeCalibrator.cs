@@ -217,9 +217,9 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// <param name="selectedIndex">index of the display to set display on</param>
 	private void InfoDisplayShift(int selectedIndex)
 	{
+		this.selectedIndex = selectedIndex;
 		PhysicalDisplayCalibration currentDisplay = this.allOptions[selectedIndex].calibration;
 		if (currentDisplay == null || this.infoDisplayInstance == null) return;
-
 		if (currentDisplay.GetDisplayWarpsValues().Count() > 0)
 		{
 			this.SetInfoDisplay(infoDisplayInstance.gameObject, currentDisplay.GetDisplayWarpsValues().First().GetDewarpGameObject().transform);
@@ -380,19 +380,12 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	private void DisplayShift()
 	{
+		this.updateTotalVertices();
 		InfoDisplayShift(selectedIndex);
 		RpcInfoDisplayShift(selectedIndex);
-		// RpcSyncRes(selectedIndex);
-	}
+		this.SetLastIndex(selectedIndex);
 
-	// private void RpcSyncRes(int selectedIndex)
-	// {
-	//     Debug.Log(selectedIndex);
-	//     Debug.Log(allOptions);
-	//     Debug.Log(allOptions[selectedIndex].machineName);
-	//     Debug.Log(allOptions[selectedIndex].calibration.GetMeshResolution() - 1);
-	//     // test(allOptions[selectedIndex].calibration.GetMeshResolution() - 1);
-	// }
+	}
 
 	/// <summary>
 	/// Triggers Rpc set last display index method and set it on local
@@ -565,10 +558,8 @@ public class RealtimeCalibrator : NetworkBehaviour
 		{
 			int lastIndex = this.vertexIndex - 1;
 			this.vertexIndex = (lastIndex < 0) ? this.getTotalVertices() - 1 : lastIndex;
-			Debug.Log(vertexIndex);
 			if (!noOptions)
 			{
-				Debug.Log(vertexIndex);
 				this.VertexShift(direction, 1f);
 			}
 
@@ -619,7 +610,6 @@ public class RealtimeCalibrator : NetworkBehaviour
 
 		if (anyPressed)
 		{
-			Debug.Log("RealtimeCalibration: isServer = " + isServer);
 			if (isServer)
 			{
 				switch (this.calibrationType)
@@ -637,6 +627,5 @@ public class RealtimeCalibrator : NetworkBehaviour
 
 			}
 		}
-		this.SetLastIndex(selectedIndex);
 	}
 }
