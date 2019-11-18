@@ -149,6 +149,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 				verts[ind.Key] = new Vector3(verts[ind.Key].x + (direction.x * delta * ind.Value), verts[ind.Key].y + (direction.y * delta * ind.Value), verts[ind.Key].z);
 			}
 
+			dewarp.UpdateVisualVerticesPosition(verts);
 			meshFilter.sharedMesh.vertices = verts;
 			meshFilter.sharedMesh.UploadMeshData(false);
 			meshFilter.mesh.RecalculateBounds();

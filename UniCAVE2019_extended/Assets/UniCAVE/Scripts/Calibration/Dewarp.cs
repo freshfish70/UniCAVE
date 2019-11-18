@@ -224,6 +224,22 @@ public class Dewarp
 	}
 
 	/// <summary>
+	/// Loops over all visual verteces and assigns the positions from the
+	/// provided array of positions. The provided positions must be an array
+	/// of same size as the verteces array.
+	/// </summary>
+	/// <param name="positions">Positions of the verteces</param>
+	public void UpdateVisualVerticesPosition(Vector3[] positions)
+	{
+		if (this.visualVerticesObjects == null || this.visualVerticesObjects?.Length < 1) return;
+		var length = positions.Length;
+		for (int i = 0; i < length; i++)
+		{
+			this.visualVerticesObjects[i].transform.localPosition = positions[i];
+		}
+	}
+
+	/// <summary>
 	/// Creates the materials and textures for the dewarp mesh
 	/// </summary>
 	private void GenerateAndAssignMaterials(string nameForMaterial)
