@@ -97,7 +97,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	private LineRenderer visualMarkerInstance;
 
 	[SerializeField]
-	public Vector2Int meshResolution = new Vector2Int(2, 2);
+	private Vector2Int meshResolution = new Vector2Int(2, 2);
 
 	/// <summary>
 	/// Positions of the dewarp mesh vertices
@@ -400,7 +400,7 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 	/// <returns>total mesh resolution</returns>
 	public int GetMeshResolution()
 	{
-		return this.dewarpMeshPositions.verts.Length;
+		return this.meshResolution.x * this.meshResolution.y;
 	}
 
 	/// <summary>
