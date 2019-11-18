@@ -259,6 +259,9 @@ public class RealtimeCalibrator : NetworkBehaviour
 		int sizeY = y;
 
 		int indexSizeX = x + 1;
+		int indexSizeY = y + 1;
+
+		int rows = sizeY;
 
 		// The row the selected index is on
 		int indexRow = (index / (sizeX + 1)) < 1.0f ? 0 : (int)Mathf.Floor(index / (sizeX + 1));
@@ -396,7 +399,70 @@ public class RealtimeCalibrator : NetworkBehaviour
 		this.RpcSetLastIndex(index);
 	}
 
+	/// <summary>
+	/// Triggers RCP and Local show verteces
+	/// </summary>
+	private void ShowVertices()
+	{
+		this.LocalShowVertices();
+		this.RpcShowVertices();
+	}
+	/// <summary>
+	/// Triggers RCP and Local hide verteces
+	/// </summary>
+	private void HideVertices()
+	{
+		this.LocalHideVertices();
+		this.RpcHideVertices();
+	}
+
+	/// <summary>
+	/// Hides all verteces on a dewarp mesh for the local instance
+	/// </summary>
+	private void LocalHideVertices()
+	{
+		this.allOptions.ForEach(e =>
+		{
+			foreach (var item in e.calibration.GetDisplayWarpsValues())
+			{
+				item.HideVertices();
+			}
+		});
+	}
+
+	/// <summary>
+	/// Shows all verteces on a dewarp mesh for the local instance
+	/// </summary>
+	private void LocalShowVertices()
+	{
+		this.allOptions.ForEach(e =>
+		{
+			foreach (var item in e.calibration.GetDisplayWarpsValues())
+			{
+				item.ShowVertices();
+			}
+		});
+	}
+
 	#region RPCCALLS
+
+	/// <summary>
+	/// Client RPC method which triggers local show verteces;
+	/// </summary>
+	[ClientRpc]
+	void RpcShowVertices()
+	{
+		this.LocalShowVertices();
+	}
+
+	/// <summary>
+	/// Client RPC method which triggers local hide verteces;
+	/// </summary>
+	[ClientRpc]
+	void RpcHideVertices()
+	{
+		this.LocalHideVertices();
+	}
 
 	/// <summary>
 	/// Client RPC methods which triggers the local vertex shift movement method.
@@ -572,6 +638,22 @@ public class RealtimeCalibrator : NetworkBehaviour
 			if (!noOptions)
 			{
 				this.VertexShift(direction, 1f);
+			}
+		}
+
+		if (Input.GetKeyDown(KeyCode.V))
+		{
+			if (!noOptions)
+			{
+				this.ShowVertices();
+			}
+		}
+
+		if (Input.GetKeyDown(KeyCode.B))
+		{
+			if (!noOptions)
+			{
+				this.HideVertices();
 			}
 		}
 

@@ -61,6 +61,12 @@ public class Dewarp
 	/// </summary>
 	private Material renderMaterial;
 
+	/// <summary>
+	/// Holds all visual verteces objects
+	/// </summary>
+	private GameObject[] visualVerticesObjects;
+
+
 	private DewarpMeshPosition _calibratedVerticesPositions;
 
 	/// <summary>
@@ -163,6 +169,58 @@ public class Dewarp
 	{
 		this.warpMeshFilter = dewarpObject.AddComponent<MeshFilter>();
 		this.warpMeshFilter.mesh = Generate();
+	}
+
+	/// <summary>
+	/// Displayes the visual vertices, if they dont exist/is created
+	/// call for creation.
+	/// </summary>
+	public void ShowVertices()
+	{
+		if (this.visualVerticesObjects == null || this.visualVerticesObjects?.Length < 1)
+		{
+			this.CreateVisualVertices();
+		}
+		else
+		{
+			foreach (var visual in this.visualVerticesObjects)
+			{
+				visual.SetActive(true);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Hides the visual verteces
+	/// </summary>
+	public void HideVertices()
+	{
+		if (this.visualVerticesObjects is null) return;
+		foreach (var visual in this.visualVerticesObjects)
+		{
+			visual.SetActive(false);
+		}
+	}
+
+	/// <summary>
+	/// Creates the visual vertices of spheres.
+	/// The spheres will have to material to get the Pink no material colour.   
+	/// </summary>
+	private void CreateVisualVertices()
+	{
+		this.visualVerticesObjects = new GameObject[this.warpMeshFilter.mesh.vertexCount];
+		var totalVertices = this.warpMeshFilter.mesh.vertices.Length;
+		var vertices = this.warpMeshFilter.mesh.vertices;
+		for (int i = 0; i < totalVertices; i++)
+		{
+			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			sphere.GetComponent<MeshRenderer>().materials = new Material[1];
+			sphere.layer = this.dewarpObject.layer;
+			sphere.transform.localScale = new Vector3(.05f, .05f, .05f);
+			sphere.transform.parent = this.dewarpObject.transform;
+			sphere.transform.localPosition = vertices[i];
+			visualVerticesObjects[i] = sphere;
+		}
 	}
 
 	/// <summary>
