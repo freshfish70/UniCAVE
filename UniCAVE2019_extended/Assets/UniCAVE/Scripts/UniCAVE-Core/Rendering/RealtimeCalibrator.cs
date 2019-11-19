@@ -141,20 +141,18 @@ public class RealtimeCalibrator : NetworkBehaviour
 			MeshFilter meshFilter = dewarp.GetDewarpMeshFilter();
 			lastWarpedFilter = meshFilter;
 			Vector3[] verts = meshFilter.sharedMesh.vertices;
-			// verts[vertexIndex] = new Vector3(verts[vertexIndex].x + direction.x * delta, verts[vertexIndex].y + direction.y * delta, verts[vertexIndex].z);
-
-			Dictionary<int, float> vertsToShift = this.getIndexesSurrounding(dewarp.xSize, dewarp.ySize, vertexIndex);
+			Dictionary<int, float> vertsToShift = this.getSurroundingIndices(dewarp.xSize + 1, dewarp.ySize + 1, vertexIndex, this.gridSelectSize);
 			foreach (var ind in vertsToShift)
 			{
-				verts[ind.Key] = new Vector3(verts[ind.Key].x + (direction.x * delta * ind.Value), verts[ind.Key].y + (direction.y * delta * ind.Value), verts[ind.Key].z);
+				int key = ind.Key;
+				float factor = delta / ind.Value;
+				verts[ind.Key] = new Vector3(verts[key].x + (direction.x * factor), verts[key].y + (direction.y * factor), verts[key].z);
 			}
-
 			dewarp.UpdateVisualVerticesPosition(verts);
 			meshFilter.sharedMesh.vertices = verts;
 			meshFilter.sharedMesh.UploadMeshData(false);
 			meshFilter.mesh.RecalculateBounds();
 			meshFilter.mesh.RecalculateTangents();
-
 		}
 
 		calibration.UpdateMeshPositions(lastWarpedFilter?.sharedMesh.vertices);
@@ -242,84 +240,85 @@ public class RealtimeCalibrator : NetworkBehaviour
 	}
 
 	/// <summary>
-	/// Creates a dictionary of indexes and move factors which holds the
-	/// indexs surrounding the provided index, the selection is a square around the index,
-	/// and each square selection will get a "move factor". The move factor tells how much the verex at index 
-	/// will be allowed to move compared to the main vertex(provided index). The selections move factor will degrade by
-	/// selection size. This makes it possible to create a "smudge effect"
-	/// 
-	/// The size is the X axis size. 
+	/// Finds surrounding verticees positions from a X*Y sized array given the 
+	/// index of a vertice. Selection is based on a square, if the selection size is
+	/// 2 it will select all indexes which is upto two positions away in a square
+	/// from the provided index.
+	/// Created by Sander @ https://github.com/sanderhurlen
 	/// </summary>
-	/// <param name="size">the x axis size</param>
-	/// <param name="index">the index number</param>
-	/// <returns>dictionary of indexeswith the index and a move factor</returns>
-	public Dictionary<int, float> getIndexesSurrounding(int x, int y, int index)
+	/// <param name="x">the x size</param>
+	/// <param name="y">the y size</param>
+	/// <param name="index">the index to get surrounding verticees from</param>
+	/// <param name="selectSize">the size of the selection</param>
+	/// <returns>Vertice index and position offset from selected idnex</returns>
+	public Dictionary<int, float> getSurroundingIndices(int x, int y, int index, int selectSize)
 	{
-
+		// Holds the vertices that we want to return and move
+		Dictionary<int, float> vertecesToMove = new Dictionary<int, float>();
+		// mesh size X and Y
 		int sizeX = x;
 		int sizeY = y;
 
 		int indexSizeX = x + 1;
 		int indexSizeY = y + 1;
 
-		int rows = sizeY;
-
 		// The row the selected index is on
-		int indexRow = (index / (sizeX + 1)) < 1.0f ? 0 : (int)Mathf.Floor(index / (sizeX + 1));
+		int indexRow = (int)Math.Floor((decimal)(index / sizeX));
 
-		int startRow = (indexRow - this.gridSelectSize) >= 0 ? (indexRow - this.gridSelectSize) : 0;
-		int endRow = (indexRow + this.gridSelectSize) <= sizeX ? (indexRow + this.gridSelectSize) : sizeX;
+		// The column the selected index is on
+		int indexColumn = (index % sizeX);
+		// The start row to select from
+		int startRow = indexRow - selectSize >= 0 ? indexRow - selectSize : 0;
+		// The row to end selection on
+		int endRow = indexRow + selectSize < sizeY ? indexRow + selectSize : sizeY - 1;
 
-		// Vertecies to move
-		Dictionary<int, float> vertsToShift = new Dictionary<int, float>();
+		// Column where to start selection
+		int startColumn = (indexColumn - selectSize) >= 0 ? (indexColumn - selectSize) : 0;
+		// The column where we end selection
+		int endColumn = indexColumn + selectSize < sizeX ? indexColumn + selectSize : sizeX - 1;
 
-		float moveFactor = (float)this.gridSelectSize / (float)((this.gridSelectSize * 2));
-		float currentMoveFactor = moveFactor;
+		// Weighting/distance away factor for vertices
+		int[] weightings = new int[sizeX + 1];
 
-		for (int row = startRow; row <= endRow; row++)
+		for (int i = 0; i <= sizeX; i++)
 		{
-			int rowDiff = indexRow - row;
-
-			int startIndexForRow = 0;
-			int stopIndexForRow = 0;
-			int midIndexForRow = 0;
-
-			int minSize = row * indexSizeX;
-			int maxSize = minSize + sizeX;
-
-			startIndexForRow = index - (indexSizeX * (rowDiff)) - this.gridSelectSize;
-			startIndexForRow = (startIndexForRow < minSize) ? minSize : startIndexForRow;
-
-			midIndexForRow = index - (indexSizeX * (rowDiff));
-
-			stopIndexForRow = index - (indexSizeX * (rowDiff)) + this.gridSelectSize;
-			stopIndexForRow = (stopIndexForRow > maxSize) ? maxSize : stopIndexForRow;
-
-			int factor = 2;
-			for (int i = midIndexForRow + 1; i <= stopIndexForRow; i++)
+			int value = i - (index % sizeX);
+			if (value >= 0)
 			{
-				vertsToShift.Add(i, moveFactor / factor);
-				factor++;
-			}
-			factor = 2;
-			for (int i = midIndexForRow - 1; i >= startIndexForRow; i--)
-			{
-				vertsToShift.Add(i, moveFactor / factor);
-				factor++;
-			}
-
-			if (midIndexForRow == index)
-			{
-				vertsToShift.Add(midIndexForRow, 1);
+				weightings[i] = (1 + value);
 			}
 			else
 			{
-				vertsToShift.Add(midIndexForRow, moveFactor);
+				weightings[i] = 1 + (value * -1);
 			}
-
 		}
-		return vertsToShift;
 
+		int rowDiff;
+		for (int position = startRow; position <= indexRow; position++)
+		{
+			rowDiff = indexRow - position;
+			for (int vertex = startColumn; vertex <= endColumn; vertex++)
+			{
+				if (position != indexRow)
+				{
+					vertecesToMove.Add(vertex + (sizeX * position), (weightings[vertex] + rowDiff));
+				}
+				else
+				{
+					vertecesToMove.Add(vertex + (sizeX * position), weightings[vertex]);
+				}
+			}
+		}
+
+		for (int position = indexRow + 1; position <= endRow; position++)
+		{
+			rowDiff = position - indexRow;
+			for (int vertex = startColumn; vertex <= endColumn; vertex++)
+			{
+				vertecesToMove.Add(vertex + (sizeX * position), (weightings[vertex] + rowDiff));
+			}
+		}
+		return vertecesToMove;
 	}
 
 	/// <summary>
