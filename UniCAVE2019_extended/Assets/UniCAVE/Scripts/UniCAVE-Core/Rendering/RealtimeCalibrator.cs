@@ -70,6 +70,11 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	private int gridSelectSize = 1;
 
+	/// <summary>
+	/// Flag to determine of debug mode is set or not
+	/// </summary>
+	private bool meshDebugMode = false;
+
 	void Start()
 	{
 		allOptions = new List<CalibrationSelection>();
@@ -124,13 +129,14 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	/// <param name="direction">the direction to move in</param>
 	/// <param name="delta">movement factor</param>
-	/// <param name="selectedIndex">the display to move vertex on</param>
+	/// /// <param name="selectedIndex">the display to move vertex on</param>
 	/// <param name="vertexIndex">the vertex to move</param>
 	private void LocalShift(Vector2 direction, float delta, int selectedIndex, int vertexIndex)
 	{
 		PhysicalDisplayCalibration lastCalibration = allOptions[lastSelectedIndex].calibration;
 		lastCalibration.HideVisualMarker();
 		PhysicalDisplayCalibration calibration = allOptions[selectedIndex].calibration;
+
 		calibration.SetVisualMarkerVertextPoint(vertexIndex);
 
 		Debug.Log("RealtimeCalibration: LocalShift called " + delta + ", " + selectedIndex + ", " + vertexIndex);
@@ -154,9 +160,9 @@ public class RealtimeCalibrator : NetworkBehaviour
 			meshFilter.mesh.RecalculateBounds();
 			meshFilter.mesh.RecalculateTangents();
 		}
-
 		calibration.UpdateMeshPositions(lastWarpedFilter?.sharedMesh.vertices);
 	}
+
 
 	/// <summary>
 	/// Move the position of a display in a given direction (-1, +1 or 0) by a factor delta.
@@ -444,7 +450,39 @@ public class RealtimeCalibrator : NetworkBehaviour
 		});
 	}
 
+	/// <summary>
+	/// Shows all verteces on a dewarp mesh for the local instance
+	/// </summary>
+	private void ToggleDebug(bool toggle)
+	{
+		this.LocalToggleDebug(toggle);
+		this.RpcToggleDebug(toggle);
+	}
+
+	/// <summary>
+	/// Shows all verteces on a dewarp mesh for the local instance
+	/// </summary>
+	private void LocalToggleDebug(bool toggle)
+	{
+		this.allOptions.ForEach(e =>
+		{
+			foreach (var item in e.calibration.GetDisplayWarpsValues())
+			{
+				item.ToogleDebugMode(toggle);
+			}
+		});
+	}
+
 	#region RPCCALLS
+
+	/// <summary>
+	/// Client RPC method which triggers local show verteces;
+	/// </summary>
+	[ClientRpc]
+	void RpcToggleDebug(bool toggle)
+	{
+		this.LocalToggleDebug(toggle);
+	}
 
 	/// <summary>
 	/// Client RPC method which triggers local show verteces;
@@ -654,6 +692,16 @@ public class RealtimeCalibrator : NetworkBehaviour
 			if (!noOptions)
 			{
 				this.HideVertices();
+			}
+		}
+
+
+		if (Input.GetKeyDown(KeyCode.Z))
+		{
+			if (!noOptions)
+			{
+				this.meshDebugMode = !this.meshDebugMode;
+				this.ToggleDebug(this.meshDebugMode);
 			}
 		}
 

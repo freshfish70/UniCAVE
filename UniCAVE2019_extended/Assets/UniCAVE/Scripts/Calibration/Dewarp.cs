@@ -149,6 +149,28 @@ public class Dewarp
 	}
 
 	/// <summary>
+	/// Toggles the debug mode on the material/shader
+	/// </summary>
+	public void ToogleDebugMode(bool toggle)
+	{
+		MeshRenderer renderer = this.dewarpObject.GetComponent<MeshRenderer>();
+		if (toggle)
+		{
+			renderer.sharedMaterial.SetFloat("_DebugDraw", 1);
+		}
+		else
+		{
+			renderer.sharedMaterial.SetFloat("_DebugDraw", 0);
+		}
+	}
+
+	public void Blend()
+	{
+		// MeshRenderer e = dewarp.GetDewarpGameObject().GetComponent<MeshRenderer>();
+		// e.sharedMaterial.SetFloat("_FadeSizePX", e.sharedMaterial.GetFloat("_FadeSizePX") + 0.001F);
+	}
+
+	/// <summary>
 	/// Sets the resolution of the warp mesh.
 	/// The total resolution will be x*y
 	/// </summary>
@@ -214,9 +236,10 @@ public class Dewarp
 		for (int i = 0; i < totalVertices; i++)
 		{
 			GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			sphere.AddComponent<Drag>();
 			sphere.GetComponent<MeshRenderer>().materials = new Material[1];
 			sphere.layer = this.dewarpObject.layer;
-			sphere.transform.localScale = new Vector3(.05f, .05f, .05f);
+			sphere.transform.localScale = new Vector3(.02f, .02f, .02f);
 			sphere.transform.parent = this.dewarpObject.transform;
 			sphere.transform.localPosition = vertices[i];
 			visualVerticesObjects[i] = sphere;
