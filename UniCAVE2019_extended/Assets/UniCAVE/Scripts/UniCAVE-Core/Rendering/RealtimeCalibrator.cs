@@ -75,6 +75,11 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	private bool meshDebugMode = false;
 
+	/// <summary>
+	/// Flag to enable/disable vertices display
+	/// </summary>
+	private bool showVertices = false;
+
 	void Start()
 	{
 		allOptions = new List<CalibrationSelection>();
@@ -401,44 +406,31 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// <summary>
 	/// Triggers RCP and Local show verteces
 	/// </summary>
-	private void ShowVertices()
+	public void ToggleVertice(bool toggle)
 	{
-		this.LocalShowVertices();
-		this.RpcShowVertices();
-	}
-	/// <summary>
-	/// Triggers RCP and Local hide verteces
-	/// </summary>
-	private void HideVertices()
-	{
-		this.LocalHideVertices();
-		this.RpcHideVertices();
+		this.LocalToggleVertices(toggle);
+		this.RpcToggleVertices(toggle);
 	}
 
-	/// <summary>
-	/// Hides all verteces on a dewarp mesh for the local instance
-	/// </summary>
-	private void LocalHideVertices()
-	{
-		this.allOptions.ForEach(e =>
-		{
-			foreach (var item in e.calibration.GetDisplayWarpsValues())
-			{
-				item.HideVertices();
-			}
-		});
-	}
 
 	/// <summary>
 	/// Shows all verteces on a dewarp mesh for the local instance
 	/// </summary>
-	private void LocalShowVertices()
+	private void LocalToggleVertices(bool toggle)
 	{
 		this.allOptions.ForEach(e =>
 		{
 			foreach (var item in e.calibration.GetDisplayWarpsValues())
 			{
+				if (toggle)
+				{
+					Debug.Log("werjwelkr");
 				item.ShowVertices();
+			}
+				else
+				{
+					item.HideVertices();
+				}
 			}
 		});
 	}
@@ -481,18 +473,9 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// Client RPC method which triggers local show verteces;
 	/// </summary>
 	[ClientRpc]
-	void RpcShowVertices()
+	void RpcToggleVertices(bool toggle)
 	{
-		this.LocalShowVertices();
-	}
-
-	/// <summary>
-	/// Client RPC method which triggers local hide verteces;
-	/// </summary>
-	[ClientRpc]
-	void RpcHideVertices()
-	{
-		this.LocalHideVertices();
+		this.LocalToggleVertices(toggle);
 	}
 
 	/// <summary>
@@ -677,18 +660,10 @@ public class RealtimeCalibrator : NetworkBehaviour
 		{
 			if (!noOptions)
 			{
-				this.ShowVertices();
+				this.showVertices = !this.showVertices;
+				this.ToggleVertice(this.showVertices);
 			}
 		}
-
-		if (Input.GetKeyDown(KeyCode.B))
-		{
-			if (!noOptions)
-			{
-				this.HideVertices();
-			}
-		}
-
 
 		if (Input.GetKeyDown(KeyCode.Z))
 		{
