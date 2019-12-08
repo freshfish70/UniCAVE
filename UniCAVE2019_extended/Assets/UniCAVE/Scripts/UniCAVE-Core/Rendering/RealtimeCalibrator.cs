@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -200,21 +200,13 @@ public class RealtimeCalibrator : NetworkBehaviour
 	}
 
 	/// <summary>
-	/// Adjust the grid selection size of vertex movement.
-	/// Uses bool to tell if it is a increase or decrease.
+	/// Sets the selection size on local machine
 	/// </summary>
-	/// <param name="increase">true to increase, false to decrease</param>
-	private void LocalAdjustGridSelectSize(bool increase)
+	/// <param name="selectSize">size of the select</param>
+	private void LocalSetGridSelectSize(int selectSize)
 	{
-		if (increase)
-		{
-			this.gridSelectSize++;
+		this.gridSelectSize = selectSize;
 		}
-		else
-		{
-			this.gridSelectSize = (this.gridSelectSize--) <= 0 ? 0 : this.gridSelectSize--;
-		}
-	}
 
 	/// <summary>
 	/// Shifts the info window to the display on the given index
@@ -327,6 +319,8 @@ public class RealtimeCalibrator : NetworkBehaviour
 		return vertecesToMove;
 	}
 
+
+
 	/// <summary>
 	/// Cycles to the next calibration type, if it reaches the end
 	/// start over.
@@ -341,14 +335,13 @@ public class RealtimeCalibrator : NetworkBehaviour
 	}
 
 	/// <summary>
-	/// Triggers adjustment of grid selection size of vertex movement.
-	/// Uses bool to tell if it is a increase or decrease.
+	/// Sets the selection size on local machine and RPC call
 	/// </summary>
-	/// <param name="increase">true to increase, false to decrease</param>
-	private void AdjustGridSelectSize(bool increase)
+	/// <param name="selectSize">size of the select</param>
+	public void SetGridSelectSize(int selectSize)
 	{
-		this.LocalAdjustGridSelectSize(increase);
-		this.RpcAdjustGridSelectSize(increase);
+		this.LocalSetGridSelectSize(selectSize);
+		this.RcpSetGridSelectSize(selectSize);
 	}
 
 	/// <summary>
@@ -561,15 +554,13 @@ public class RealtimeCalibrator : NetworkBehaviour
 	}
 
 	/// <summary>
-	/// Client RPC method which calls <c>LocalAdjustGridSelectSize</c> on clients to 
-	/// adjustment of grid selection size of vertex movement.
-	/// Uses bool to tell if it is a increase or decrease.
+	/// Sets the selection size on remote machine
 	/// </summary>
-	/// <param name="increase">true to increase, false to decrease</param>
+	/// <param name="selectSize">The size of the select</param>
 	[ClientRpc]
-	void RpcAdjustGridSelectSize(bool increase)
+	void RcpSetGridSelectSize(int selectSize)
 	{
-		LocalAdjustGridSelectSize(increase);
+		LocalSetGridSelectSize(selectSize);
 	}
 
 	/// <summary>
@@ -614,12 +605,15 @@ public class RealtimeCalibrator : NetworkBehaviour
 
 		if (Input.GetKeyDown(KeyCode.KeypadPlus))
 		{
-			this.AdjustGridSelectSize(true);
+			this.gridSelectSize++;
+			this.SetGridSelectSize(this.gridSelectSize);
 		}
 
 		if (Input.GetKeyDown(KeyCode.KeypadMinus))
 		{
-			this.AdjustGridSelectSize(false);
+			int currentSelectSize = this.gridSelectSize;
+			int newSize = currentSelectSize-- < 1 ? 1 : currentSelectSize--;
+			this.SetGridSelectSize(newSize);
 		}
 
 		Vector3 direction = Vector3.zero;
