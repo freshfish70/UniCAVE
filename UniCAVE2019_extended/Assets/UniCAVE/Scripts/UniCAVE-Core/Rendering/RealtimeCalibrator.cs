@@ -595,7 +595,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 		if (Input.GetKeyDown(KeyCode.KeypadMinus))
 		{
 			int currentSelectSize = this.gridSelectSize;
-			int newSize = currentSelectSize-- < 1 ? 1 : currentSelectSize--;
+			int newSize = currentSelectSize-- <= 0 ? 0 : currentSelectSize--;
 			this.SetGridSelectSize(newSize);
 		}
 
