@@ -80,6 +80,16 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	private bool showVertices = false;
 
+	/// <summary>
+	/// The factor to move vertices
+	/// </summary>
+	private float verticeDelta = 0.0015f;
+
+	/// <summary>
+	/// How much weight other verteces of the selection greid should have
+	/// </summary>
+	private float fallofMagnitude = 1.5f;
+
 	void Start()
 	{
 		allOptions = new List<CalibrationSelection>();
@@ -156,7 +166,8 @@ public class RealtimeCalibrator : NetworkBehaviour
 			foreach (var ind in vertsToShift)
 			{
 				int key = ind.Key;
-				float factor = delta / ind.Value;
+
+				float factor = (float)(delta / Math.Pow((Math.Pow((2 / this.fallofMagnitude), ind.Value)), 2)) / 10;
 				verts[ind.Key] = new Vector3(verts[key].x + (direction.x * factor), verts[key].y + (direction.y * factor), verts[key].z);
 			}
 			dewarp.UpdateVisualVerticesPosition(verts);
@@ -324,7 +335,15 @@ public class RealtimeCalibrator : NetworkBehaviour
 		return vertecesToMove;
 	}
 
+	public void SetVerticeDelta(float delta)
+	{
+		this.verticeDelta = delta;
+	}
 
+	public void SetFallof(float fallof)
+	{
+		this.fallofMagnitude = fallof;
+	}
 
 	/// <summary>
 	/// Cycles to the next calibration type, if it reaches the end
@@ -720,7 +739,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 						this.RotationShift(direction, 0.10f);
 						break;
 					case CalibrationType.VERTEX:
-						this.VertexShift(direction, 0.0015f);
+						this.VertexShift(direction, this.verticeDelta);
 						break;
 				}
 
