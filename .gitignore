@@ -19,3 +19,7 @@ obj/
 Library/
 Temp/
 *.db.meta
+**/[Bb]uild
+**/*[Aa]ssets/TextMesh Pro
+.vs
+configs
