@@ -438,7 +438,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// <summary>
 	/// Shows all verteces on a dewarp mesh for the local instance
 	/// </summary>
-	private void ToggleDebug(bool toggle)
+	public void ToggleDebug(bool toggle)
 	{
 		this.LocalToggleDebug(toggle);
 		this.RpcToggleDebug(toggle);
