@@ -470,6 +470,11 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		this.transform.Rotate(rot);
 	}
 
+	public Dewarp GetDewarpObject()
+	{
+		return this.displayCalibrations.First().Value;
+	}
+
 	/// <summary>
 	/// Sets the visual marker to vertex point
 	/// </summary>

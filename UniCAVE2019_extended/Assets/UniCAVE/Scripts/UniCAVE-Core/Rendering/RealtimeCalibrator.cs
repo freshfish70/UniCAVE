@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -222,7 +222,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 	private void LocalSetGridSelectSize(int selectSize)
 	{
 		this.gridSelectSize = selectSize;
-		}
+	}
 
 	/// <summary>
 	/// Shifts the info window to the display on the given index
@@ -238,6 +238,12 @@ public class RealtimeCalibrator : NetworkBehaviour
 			this.SetInfoDisplay(infoDisplayInstance.gameObject, currentDisplay.GetDisplayWarpsValues().First().GetDewarpGameObject().transform);
 			this.infoDisplayInstance.SetText(this.calibrationType.ToString());
 		}
+	}
+
+	private void EdgeBlend(float blendAmount, Side side)
+	{
+		PhysicalDisplayCalibration currentDisplay = this.allOptions[this.selectedIndex].calibration;
+		currentDisplay.GetDewarpObject().GetDewarpGameObject().GetComponent<Renderer>().sharedMaterial.SetFloat("_FadeSizeNX", 1);
 	}
 
 	/// <summary>
@@ -444,8 +450,8 @@ public class RealtimeCalibrator : NetworkBehaviour
 				if (toggle)
 				{
 					Debug.Log("werjwelkr");
-				item.ShowVertices();
-			}
+					item.ShowVertices();
+				}
 				else
 				{
 					item.HideVertices();
