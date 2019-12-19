@@ -9,6 +9,9 @@ using UnityEngine.UI;
 /// </summary>
 public class VisualRealtimeCalibrationBinder : MonoBehaviour
 {
+	[SerializeField]
+	private RealtimeCalibrator realtimeCalibrator;
+
 	[Header("Vertices")]
 	#region Vertices
 	[SerializeField]
@@ -33,18 +36,14 @@ public class VisualRealtimeCalibrationBinder : MonoBehaviour
 	private Slider leftBlend;
 
 	#endregion
-	private RealtimeCalibrator realtimeCalibrator;
-	void Awake()
+	void Start()
 	{
-		RealtimeCalibrator rtc = FindObjectOfType<RealtimeCalibrator>();
-		if (rtc == null)
+		if (realtimeCalibrator == null)
 		{
 			throw new MissingComponentException("Requires RealtimeCalibrator in the scene!");
 		}
 
 		this.RegisterEvents();
-		this.realtimeCalibrator = rtc;
-
 		this.showVertices.SetIsOnWithoutNotify(false);
 	}
 
