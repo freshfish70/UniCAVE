@@ -405,7 +405,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 	public void SetGridSelectSize(int selectSize)
 	{
 		this.LocalSetGridSelectSize(selectSize);
-		this.RcpSetGridSelectSize(selectSize);
+		this.RpcSetGridSelectSize(selectSize);
 	}
 
 	/// <summary>
@@ -609,9 +609,9 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	/// <param name="selectSize">The size of the select</param>
 	[ClientRpc]
-	void RcpSetGridSelectSize(int selectSize)
+	void RpcSetGridSelectSize(int selectSize)
 	{
-		LocalSetGridSelectSize(selectSize);
+		this.LocalSetGridSelectSize(selectSize);
 	}
 
 	/// <summary>
