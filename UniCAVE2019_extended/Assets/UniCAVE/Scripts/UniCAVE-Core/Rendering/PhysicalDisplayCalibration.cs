@@ -470,6 +470,19 @@ public class PhysicalDisplayCalibration : MonoBehaviour
 		this.transform.Rotate(rot);
 	}
 
+	/// <summary>
+	/// Blend an edge for all active displaycalibration displays.
+	/// </summary>
+	/// <param name="blendAmount">amount to blend</param>
+	/// <param name="sideName">name of the side to blend</param>
+	public void EdgeBlend(float blendAmount, String sideName)
+	{
+		foreach (var display in this.displayCalibrations)
+		{
+			display.Value.GetDewarpGameObject().GetComponent<Renderer>().sharedMaterial.SetFloat(sideName, blendAmount);
+		}
+	}
+
 	public Dewarp GetDewarpObject()
 	{
 		return this.displayCalibrations.First().Value;
