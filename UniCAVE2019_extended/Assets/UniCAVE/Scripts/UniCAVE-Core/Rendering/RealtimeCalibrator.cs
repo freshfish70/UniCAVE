@@ -240,10 +240,34 @@ public class RealtimeCalibrator : NetworkBehaviour
 		}
 	}
 
-	private void EdgeBlend(float blendAmount, Side side)
+	/// <summary>
+	/// Blends edge by a given amount.
+	/// </summary>
+	/// <param name="blendAmount">Value between 0-1</param>
+	/// <param name="side">Side to blend</param>
+	public void EdgeBlend(float blendAmount, Side side)
 	{
+		string sideName = "";
+		switch (side)
+		{
+			case Side.TOP:
+				sideName = "_FadeSizePY";
+				break;
+			case Side.RIGHT:
+				sideName = "_FadeSizePX";
+				break;
+			case Side.BOTTOM:
+				sideName = "_FadeSizeNY";
+				break;
+			case Side.LEFT:
+				sideName = "_FadeSizeNX";
+				break;
+			default:
+				return; // DO NOTHING 
+		}
+
 		PhysicalDisplayCalibration currentDisplay = this.allOptions[this.selectedIndex].calibration;
-		currentDisplay.GetDewarpObject().GetDewarpGameObject().GetComponent<Renderer>().sharedMaterial.SetFloat("_FadeSizeNX", 1);
+		currentDisplay.GetDewarpObject().GetDewarpGameObject().GetComponent<Renderer>().sharedMaterial.SetFloat(sideName, blendAmount);
 	}
 
 	/// <summary>

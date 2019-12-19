@@ -109,6 +109,7 @@ public class VisualRealtimeCalibrationBinder : MonoBehaviour
 
 	private void SetTopBlend(float blend)
 	{
+		this.realtimeCalibrator.EdgeBlend(blend, Side.TOP);
 	}
 
 	public void SetTopBlendState(float blend)
@@ -117,6 +118,7 @@ public class VisualRealtimeCalibrationBinder : MonoBehaviour
 
 	private void SetRightBlend(float blend)
 	{
+		this.realtimeCalibrator.EdgeBlend(blend, Side.RIGHT);
 	}
 
 	public void SetRightBlendState(float blend)
@@ -125,6 +127,7 @@ public class VisualRealtimeCalibrationBinder : MonoBehaviour
 
 	private void SetBottomBlend(float blend)
 	{
+		this.realtimeCalibrator.EdgeBlend(blend, Side.BOTTOM);
 	}
 
 	public void SetBottomBlendState(float blend)
@@ -132,6 +135,7 @@ public class VisualRealtimeCalibrationBinder : MonoBehaviour
 	}
 	private void SetLeftBlend(float blend)
 	{
+		this.realtimeCalibrator.EdgeBlend(blend, Side.LEFT);
 	}
 	public void SetLeftBlendState(float blend)
 	{
