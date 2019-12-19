@@ -245,7 +245,7 @@ public class RealtimeCalibrator : NetworkBehaviour
 	/// </summary>
 	/// <param name="blendAmount">Value between 0-1</param>
 	/// <param name="side">Side to blend</param>
-	public void EdgeBlend(float blendAmount, Side side)
+	public void LocalEdgeBlend(float blendAmount, Side side)
 	{
 		string sideName = "";
 		switch (side)
@@ -265,9 +265,8 @@ public class RealtimeCalibrator : NetworkBehaviour
 			default:
 				return; // DO NOTHING 
 		}
-
 		PhysicalDisplayCalibration currentDisplay = this.allOptions[this.selectedIndex].calibration;
-		currentDisplay.GetDewarpObject().GetDewarpGameObject().GetComponent<Renderer>().sharedMaterial.SetFloat(sideName, blendAmount);
+		currentDisplay.EdgeBlend(blendAmount, sideName);
 	}
 
 	/// <summary>
@@ -386,6 +385,17 @@ public class RealtimeCalibrator : NetworkBehaviour
 		this.RpcSetCalibrationType(this.calibrationType);
 		this.infoDisplayInstance.SetText(this.calibrationType.ToString());
 		return this.calibrationType;
+	}
+
+	/// <summary>
+	/// Edge blending RCP and local call
+	/// </summary>
+	/// <param name="blendAmount">amount to blend</param>
+	/// <param name="side">the side to blend</param>
+	public void EdgeBlend(float blendAmount, Side side)
+	{
+		this.LocalEdgeBlend(blendAmount, side);
+		this.RpcEdgeBlend(blendAmount, side);
 	}
 
 	/// <summary>
@@ -508,6 +518,15 @@ public class RealtimeCalibrator : NetworkBehaviour
 	}
 
 	#region RPCCALLS
+
+	/// <summary>
+	/// Client RPC method which triggers local show verteces;
+	/// </summary>
+	[ClientRpc]
+	void RpcEdgeBlend(float blendAmount, Side side)
+	{
+		this.LocalEdgeBlend(blendAmount, side);
+	}
 
 	/// <summary>
 	/// Client RPC method which triggers local show verteces;
